@@ -31,13 +31,24 @@ async function run() {
 	try {
 		
         const productsCollection = client.db("resaleproduct").collection("products");
-        
+
+     const bookingsCollection = client.db("resaleproduct").collection("booking") 
         app.get("/allProduct", async (req, res) => {
             const query = {};
             const cursor = await productsCollection.find(query).toArray();
             res.send(cursor)
 
    })   
+
+        // Booking Product
+     app.post("/bookings", async (req, res) => {
+              
+	const booking = req.body;
+      console.log(booking);
+              
+const result = await bookingsCollection.insertOne(booking);
+		res.send(result);
+	});     
    
         // Single Product Information
     app.get("/singleProduct/:id", async (req, res) => {
