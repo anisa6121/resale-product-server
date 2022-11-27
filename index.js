@@ -32,7 +32,12 @@ async function run() {
 		
         const productsCollection = client.db("resaleproduct").collection("products");
         
-        
+        app.get("/allProduct", async (req, res) => {
+            const query = {};
+            const cursor = await productsCollection.find(query).toArray();
+            res.send(cursor)
+
+   })     
 		
 
 
