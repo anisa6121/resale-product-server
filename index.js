@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 
+const jwt = require("jsonwebtoken");
+
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 // dotenv
@@ -32,7 +34,9 @@ async function run() {
 		
         const productsCollection = client.db("resaleproduct").collection("products");
 
-     const bookingsCollection = client.db("resaleproduct").collection("booking") 
+        const bookingsCollection = client.db("resaleproduct").collection("booking") 
+        
+const usersCollection = client.db("resaleproduct").collection("users");     
         app.get("/allProduct", async (req, res) => {
             const query = {};
             const cursor = await productsCollection.find(query).toArray();
@@ -57,12 +61,32 @@ const result = await bookingsCollection.insertOne(booking);
 		const product = await productsCollection.findOne(query);
 		res.send(product); 
     });
-		
-
         
-        // get booking data
+        
+        
+// jwt Token
+app.get("/jwt", async (req, res) => {
+	const email = req.query.email;
+	const query = { email: email };
+	const user = await usersCollection.findOne(query);
+
+	console.log(user);
+
+if (user) {
+const token = jwt.sign({ email },process.env.ACCESS_TOKEN_SECRET,{ expiresIn: "1d" });
+
+	return res.send({ getToken: token });
+}
+
+res.status(403).send({ getToken: "" });
+});
+       
+        
+// get booking data
 app.get("/bookings",  async (req, res) => {
 	const email = req.query.email;
+
+	 console.log('Token',req.headers.authorization);
 
 	
 
@@ -72,7 +96,13 @@ app.get("/bookings",  async (req, res) => {
 	res.send(bookings);
 });
 
-
+// user information save database
+app.post("/users", async (req, res) => {
+	const user = req.body;
+	console.log(user);
+	const result = await usersCollection.insertOne(user);
+	res.send(result);
+});
 			
 	
 	
