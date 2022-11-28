@@ -59,6 +59,18 @@ const result = await bookingsCollection.insertOne(booking);
     });
 		
 
+        
+        // get booking data
+app.get("/bookings",  async (req, res) => {
+	const email = req.query.email;
+
+	
+
+	const query = { email: email };
+	const bookings = await bookingsCollection.find(query).toArray();
+
+	res.send(bookings);
+});
 
 
 			
