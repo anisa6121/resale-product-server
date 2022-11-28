@@ -51,36 +51,40 @@ if (err) {
 }
 async function run() {
 	try {
-const productsCollection = client.db("resaleproduct").collection("products");
+		const productsCollection = client
+			.db("resaleproduct")
+			.collection("products");
 
-const bookingsCollection = client.db("resaleproduct").collection("booking");
+		const bookingsCollection = client
+			.db("resaleproduct")
+			.collection("booking");
 
- const usersCollection = client.db("resaleproduct").collection("users");
-        
-
+		const usersCollection = client
+			.db("resaleproduct")
+			.collection("users");
 
 		app.get("/allProduct", async (req, res) => {
 			const query = {};
 			const cursor = await productsCollection
 				.find(query)
 				.toArray();
+
 			res.send(cursor);
 		});
 
-	// const verifyAdmin = async (req, res, next) => {
-	// 	const decodedEmail = req.decoded.email;
-	// 	const query = { email: decodedEmail };
-	// 	const user = await usersCollection.findOne(query);
+		// Verify Admin
+		const verifyAdmin = async (req, res, next) => {
+			const decodedEmail = req.decoded.email;
+			const query = { email: decodedEmail };
+			const user = await usersCollection.findOne(query);
 
-	// 	if (user?.role !== "admin") {
-	// 		return res
-	// 			.status(403)
-	// 			.send({ message: "forbidden access" });
-	// 	}
-	// 	next();
-	// };
-
-
+			if (user?.role !== "admin") {
+				return res
+					.status(403)
+					.send({ message: "forbidden access" });
+			}
+			next();
+		};
 
 		// Booking Product
 		app.post("/bookings", async (req, res) => {
@@ -138,10 +142,18 @@ const bookingsCollection = client.db("resaleproduct").collection("booking");
 			const bookings = await bookingsCollection
 				.find(query)
 				.toArray();
-
+ 
 			res.send(bookings);
 		});
 
+		// particular id
+	app.get("/bookings/:id", async (req, res) => {
+		const id = req.params.id;
+		const query = { _id: ObjectId(id) };
+		const booking = await bookingsCollection.findOne(query);
+		res.send(booking);
+	});
+		
 		// user information save database
 		app.post("/users", async (req, res) => {
 			const user = req.body;
@@ -156,27 +168,22 @@ const bookingsCollection = client.db("resaleproduct").collection("booking");
 			const users = await usersCollection.find(query).toArray();
 			res.send(users);
 		});
-	// Is Admin
+		// Is Admin
 		app.get("/users/admin/:email", async (req, res) => {
-		
 			const email = req.params.email;
 			const query = { email: email };
 			const user = await usersCollection.findOne(query);
 			res.send({ isAdmin: user?.role === "admin" });
-        });
-        
-// update
-        app.put("/users/admin/:id", verifyJWT, async (req, res) => {
-    
-	const decodedEmail = req.decoded.email;
-	const query = { email: decodedEmail };
-	const user = await usersCollection.findOne(query);
+		});
 
-		if (user?.role !== "admin") {
-			return res
-			.status(403)
-			.send({ message: "forbidden access" });
-		}
+		// update
+		app.put(
+			"/users/admin/:id",
+			verifyJWT,
+			verifyAdmin,
+			async (req, res) => {
+				const query = { email: decodedEmail };
+				const user = await usersCollection.findOne(query);
 
 				const id = req.params.id;
 				const filter = { _id: ObjectId(id) };
@@ -188,18 +195,29 @@ const bookingsCollection = client.db("resaleproduct").collection("booking");
 					},
 				};
 
-	const result = await usersCollection.updateOne(filter,updatedDoc,options);
-		res.send(result);
-	}
-);
+				const result = await usersCollection.updateOne(
+					filter,
+					updatedDoc,
+					options
+				);
+				res.send(result);
+			}
+		);
 
-		// Admin   delete user 
-		app.delete("/users/:id", async (req, res) => {
-			const id = req.params.id;
-			const filter = { _id: ObjectId(id) };
-			const result = await usersCollection.deleteOne(filter);
-			res.send(result);
-		});
+		// Admin   delete user
+		app.delete(
+			"/users/:id",
+			verifyJWT,
+			verifyAdmin,
+			async (req, res) => {
+				const id = req.params.id;
+				const filter = { _id: ObjectId(id) };
+				const result = await usersCollection.deleteOne(
+					filter
+				);
+				res.send(result);
+			}
+		);
 	}
 
 
