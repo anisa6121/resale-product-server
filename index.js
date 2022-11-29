@@ -10,6 +10,7 @@ require("dotenv").config()
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 console.log(stripe)
+
 const app = express();
 const port = process.env.port || 8000;
 
@@ -184,6 +185,21 @@ async function run() {
 		});
 
 		// Stripe
+		// app.post("/create-payment-intent", async (req, res) => {
+		// 	const booking = req.body;
+		// 	const price = booking.price;
+		// 	const amount = price * 100;
+
+		// 	const paymentIntent = await stripe.paymentIntents.create({
+		// 		currency: "usd",
+		// 		amount: amount,
+		// 		payment_method_types: ["card"],
+		// 	});
+
+		// 	res.send({
+		// 		clientSecret: paymentIntent.client_secret,
+		// 	});
+		// });
 		app.post("/create-payment-intent", async (req, res) => {
 			const booking = req.body;
 			const price = booking.price;
@@ -200,7 +216,7 @@ async function run() {
 			});
 		});
 
-		// Payment Collection
+	// Payment Collection
 		app.post("/payments", async (req, res) => {
 			const payment = req.body;
 			const result = await paymentsCollection.insertOne(payment);
