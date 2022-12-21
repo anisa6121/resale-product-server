@@ -285,5 +285,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-	console.log(`Product Server is Running ${port}`);
+	console.log(`Product Services Server is Running ${port}`);
 });
